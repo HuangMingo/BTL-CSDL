@@ -38,17 +38,8 @@
 ---
 
 ## 👥 Nhóm thực hiện
-**Nhóm 18**  
+**Nhóm 12**  
 Trường: *Học viện Công nghệ Bưu chính Viễn thông (PTIT)*
-
----
-
-## 📸 Gợi ý (tùy chọn)
-> Bạn có thể thêm ảnh minh họa giao diện bằng cú pháp sau:
->
-> ```markdown
-> ![Giao diện chính](images/main_ui.png)
-> ```
 
 ---
 
