@@ -17,8 +17,8 @@ public class BenhNhanDAO implements DAOInterface<Patient> {
 //        B1: Tao ket noi toi CSDL
         Connection con = JDBCUtil.getConnection();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        String sql = "INSERT INTO benhnhan (MaBenhNhan, HoVaTen, NgaySinh, GioiTinh, CCCD, SoDienThoai, SoDienThoaiNGH) "
-                + "VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO benhnhan (MaBenhNhan, HoVaTen, NgaySinh, GioiTinh, CCCD, SoDienThoai, SoDienThoaiNGH, DiaChi) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         PreparedStatement ps = con.prepareStatement(sql);
         ps.setString(1, b.getMa_benh_nhan());
         ps.setString(2, b.getHo_ten());
@@ -27,6 +27,7 @@ public class BenhNhanDAO implements DAOInterface<Patient> {
         ps.setString(5, b.getCccd());
         ps.setString(6, b.getSo_dien_thoai());
         ps.setString(7, b.getSo_dien_thoai_ngh());
+        ps.setString(8, b.getDiaChi());
         int ans = ps.executeUpdate();
         JDBCUtil.closeConnection(con);
         return ans;

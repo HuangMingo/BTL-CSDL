@@ -1,6 +1,8 @@
+import DataAccessObject.BacSiDAO;
 import DataAccessObject.BenhNhanDAO;
 import db.JDBCUtil;
 import model.Patient;
+import model.Doctor;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
@@ -12,6 +14,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.ParseException;
 import java.util.*;
 import java.text.SimpleDateFormat;
 
@@ -77,7 +80,34 @@ public class HospitalApp extends JFrame {
         JLabel info = new JLabel("Demo: in-memory CRUD UI — chạy trên NetBeans. Dữ liệu không được lưu khi đóng.");
         add(info, BorderLayout.SOUTH);
     }
+            //Validate
 
+    public static boolean validatePatientInfo(Patient pa){
+        boolean check = true;
+        if(pa.getSo_dien_thoai().length() != 10 && pa.getSo_dien_thoai().length() != 0) {
+            JOptionPane.showMessageDialog(null, "Số điện thoại không hợp lệ");
+            check = false;
+        }
+        if(pa.getSo_dien_thoai_ngh().length() != 10 && pa.getSo_dien_thoai_ngh().length() != 0) {
+            JOptionPane.showMessageDialog(null, "Số điện thoại NGH không hợp lệ");
+            check = false;
+        }
+        if(pa.getCccd().length() != 12 && pa.getCccd().length() != 0) {
+            JOptionPane.showMessageDialog(null, "Số CCCD không hợp lệ");
+            check = false;
+        }
+//        if(pa.getNgaySinh().compareTo("%4s-%s-%s") != 0 && pa.getNgaySinh() != "%4s-%2s-%2s"){
+//            JOptionPane.showMessageDialog(null, "Ngày sinh không hợp lệ");
+//            check = false;
+//        }
+
+        if(pa.getMa_benh_nhan().length() != 5 && pa.getMa_benh_nhan().length() != 0) {
+            JOptionPane.showMessageDialog(null, "Mã bệnh nhân không hợp lệ");
+            check = false;
+        }
+//        if(pa.getNgaySinh() != '')
+        return check;
+    }
     private JPanel buildPatientPanel() throws SQLException {
         JPanel p = new JPanel(new BorderLayout());
         String[] columns = {"Mã bệnh nhân", "Họ tên", "CCCD", "Ngày sinh", "Giới tính", "Địa chỉ", "SĐT", "SĐT NGH"};
@@ -104,32 +134,10 @@ public class HospitalApp extends JFrame {
             PatientFormDialog d = new PatientFormDialog(this, null);
             d.setVisible(true);
             if (d.saved) {
-                Patient pa = d.patient;
-                if(pa.getMa_benh_nhan().length() != 5 && pa.getMa_benh_nhan().length() != 0) {
-                    JOptionPane.showMessageDialog(this, "Mã bệnh nhân không hợp lệ");
-                    return;
-                }
-                if(pa.getCccd().length() != 12 && pa.getCccd().length() != 0) {
-                    JOptionPane.showMessageDialog(this, "Số CCCD không hợp lệ");
-                    return;
-                }
-                if(pa.getSo_dien_thoai().length() != 10 && pa.getSo_dien_thoai_ngh().length() != 0) {
-                    JOptionPane.showMessageDialog(this, "Số điện thoại không hợp lệ");
-                    return;
-                }
-                if(pa.getSo_dien_thoai_ngh().length() != 10 && pa.getSo_dien_thoai_ngh().length() != 0) {
-                    JOptionPane.showMessageDialog(this, "Số điện thoại NGH không hợp lệ");
-                    return;
-                }
-                System.out.println("Đang thêm bệnh nhân: " + pa.getMa_benh_nhan());
+                System.out.println("Đang thêm bệnh nhân");
                 BenhNhanDAO patientDAO = new BenhNhanDAO();
                 try {
                     patientDAO.insert(d.patient);
-                } catch (SQLException ex) {
-                    throw new RuntimeException(ex);
-                }
-                try {
-                    buildPatientPanel();
                 } catch (SQLException ex) {
                     throw new RuntimeException(ex);
                 }
@@ -140,7 +148,6 @@ public class HospitalApp extends JFrame {
                 }
             }
         });
-
         editBtn.addActionListener(e -> {
             int r = table.getSelectedRow();
             if (r == -1) {
@@ -158,23 +165,6 @@ public class HospitalApp extends JFrame {
             PatientFormDialog d = new PatientFormDialog(this, ptn);
             d.setVisible(true);
             if (d.saved) {
-                Patient pa = d.patient;
-                if(pa.getSo_dien_thoai().length() != 10 && pa.getSo_dien_thoai_ngh().length() != 0) {
-                    JOptionPane.showMessageDialog(this, "Số điện thoại không hợp lệ");
-                    return;
-                }
-                if(pa.getSo_dien_thoai_ngh().length() != 10 && pa.getSo_dien_thoai_ngh().length() != 0) {
-                    JOptionPane.showMessageDialog(this, "Số điện thoại NGH không hợp lệ");
-                    return;
-                }
-                if(pa.getCccd().length() != 12 && pa.getCccd().length() != 0) {
-                    JOptionPane.showMessageDialog(this, "Số CCCD không hợp lệ");
-                    return;
-                }
-                if(pa.getMa_benh_nhan().length() != 5 && pa.getMa_benh_nhan().length() != 0) {
-                    JOptionPane.showMessageDialog(this, "Mã bệnh nhân không hợp lệ");
-                    return;
-                }
                 try {
                     benhNhanDAO.update(d.patient);
                 } catch (SQLException ex) {
@@ -186,7 +176,6 @@ public class HospitalApp extends JFrame {
                 } catch (SQLException ex) {
                     throw new RuntimeException(ex);
                 }
-
             }
         });
 
@@ -239,11 +228,10 @@ public class HospitalApp extends JFrame {
         return p;
     }
 
-    private JPanel buildDoctorPanel() {
+    private JPanel buildDoctorPanel() throws SQLException {
         JPanel p = new JPanel(new BorderLayout());
-
-        String[] cols = {"Mã bác sĩ", "Họ tên", "Chuyên khoa", "SĐT", "Email"};
-        doctorTableModel = new DefaultTableModel(cols, 0);
+        String[] cols = {"Mã bác sĩ", "Họ tên", "Số năm kinh nghiệm", "SĐT", "Chuyên khoa"};
+        doctorTableModel = new DefaultTableModel(cols, 100);
         JTable table = new JTable(doctorTableModel);
         refreshDoctorTable();
 
@@ -263,10 +251,13 @@ public class HospitalApp extends JFrame {
         addBtn.addActionListener(e -> {
             DoctorFormDialog d = new DoctorFormDialog(this, null);
             d.setVisible(true);
+            BacSiDAO bacSiDAO = new BacSiDAO();
             if (d.saved) {
-                doctors.add(d.doctor);
-//                people.add(d.doctor.person);
-                refreshDoctorTable();
+                try {
+                    refreshDoctorTable();
+                } catch (SQLException ex) {
+                    throw new RuntimeException(ex);
+                }
             }
         });
 
@@ -281,7 +272,13 @@ public class HospitalApp extends JFrame {
             if (doc == null) return;
             DoctorFormDialog d = new DoctorFormDialog(this, doc);
             d.setVisible(true);
-            if (d.saved) refreshDoctorTable();
+            if (d.saved) {
+                try {
+                    refreshDoctorTable();
+                } catch (SQLException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
         });
 
         delBtn.addActionListener(e -> {
@@ -293,16 +290,15 @@ public class HospitalApp extends JFrame {
             String id = (String) table.getValueAt(r, 0);
             Doctor doc = findDoctorById(id);
             if (doc != null) {
-                int ok = JOptionPane.showConfirmDialog(this, "Xóa bác sĩ " + doc.hoTen + " ?");
+                int ok = JOptionPane.showConfirmDialog(this, "Xóa bác sĩ " + doc.getHo_ten() + " ?");
                 if (ok == JOptionPane.YES_OPTION) {
                     doctors.remove(doc);
-//                    people.remove(doc.person);
                     // remove related assignments
                     examRecords.forEach(er -> {
-                        if (er.doctorId.equals(doc.doctorId)) er.doctorId = "";
+                        if (er.doctorId.equals(doc.getMaBacSi())) er.doctorId = "";
                     });
                     prescriptions.forEach(pr -> {
-                        if (pr.doctorId.equals(doc.doctorId)) pr.doctorId = "";
+                        if (pr.doctorId.equals(doc.getMaBacSi())) pr.doctorId = "";
                     });
                     try {
                         refreshAllTables();
@@ -652,11 +648,14 @@ public class HospitalApp extends JFrame {
         }
     }
 
-    private void refreshDoctorTable() {
+    private void refreshDoctorTable() throws SQLException {
         doctorTableModel.setRowCount(0);
-        for (Doctor d : doctors) {
-            doctorTableModel.addRow(new Object[]{d.doctorId, d.hoTen, d.soNamKinhNghiem, d.sdt, d.specialty});
-        }
+        BacSiDAO bacSiDAO = new BacSiDAO();
+        ArrayList<model.Doctor> a = bacSiDAO.selectAll();
+        for(model.Doctor d : a)
+            doctorTableModel.addRow(new Object[]{
+                    d.getMaBacSi(), d.getHo_ten(), d.getSoNamKinhNghiem(), d.getSo_dien_thoai(), d.getChuyen_khoa().getTen()
+            });
     }
 
     private void refreshExamTable() {
@@ -702,13 +701,9 @@ public class HospitalApp extends JFrame {
     }
 
     // ---------- Find helpers ----------
-//    private Patient findPatientById(String id) {
-//        for (Patient p : patients) if (p.getMa_benh_nhan().equals(id)) return p;
-//        return null;
-//    }
 
     private Doctor findDoctorById(String id) {
-        for (Doctor d : doctors) if (d.doctorId.equals(id)) return d;
+        for (Doctor d : doctors) if (d.getMaBacSi().equals(id)) return d;
         return null;
     }
 
@@ -745,7 +740,7 @@ public class HospitalApp extends JFrame {
 
     private String findDoctorName(String id) {
         Doctor d = findDoctorById(id);
-        return d == null ? "" : d.hoTen;
+        return d == null ? "" : d.getHo_ten();
     }
 
     private String findMedicineName(String id) {
@@ -771,45 +766,23 @@ public class HospitalApp extends JFrame {
     }
 
     // ---------- Data classes ----------
-//    static class Person {
-//        String fullName, dateOfBirth, gender, address, phone, email, cccd;
-//        Person(String fullName, String dateOfBirth, String gender, String address, String phone, String email, String cccd) {
-//            this.fullName = fullName; this.dateOfBirth = dateOfBirth; this.gender = gender;
-//            this.address = address; this.phone = phone; this.email = email; this.cccd = cccd;
-//        }
-//    }
 
-//    static class Patient {
-//        String patientId, CCCD, hoTen, gioiTinh, diaChi, sdt, sdtNGH;
-//        Date ngaySinh;
-//
-//        public Patient(String patientId, String CCCD, String hoTen, String gioiTinh, String diaChi, String sdt, String sdtNGH, Date ngaySinh) {
-//            this.patientId = patientId;
-//            this.CCCD = CCCD;
+
+//    static class Doctor {
+//        String doctorId;
+//        String specialty;
+//        String hoTen;
+//        int soNamKinhNghiem;
+//        String sdt;
+//        public Doctor(String doctorId, String specialty, String hoTen, int soNamKinhNghiem, String sdt) {
+//            this.doctorId = doctorId;
+//            this.specialty = specialty;
 //            this.hoTen = hoTen;
-//            this.gioiTinh = gioiTinh;
-//            this.diaChi = diaChi;
+//            this.soNamKinhNghiem = soNamKinhNghiem;
 //            this.sdt = sdt;
-//            this.sdtNGH = sdtNGH;
-//            this.ngaySinh = ngaySinh;
 //        }
+//
 //    }
-
-    static class Doctor {
-        String doctorId;
-        String specialty;
-        String hoTen;
-        int soNamKinhNghiem;
-        String sdt;
-        public Doctor(String doctorId, String specialty, String hoTen, int soNamKinhNghiem, String sdt) {
-            this.doctorId = doctorId;
-            this.specialty = specialty;
-            this.hoTen = hoTen;
-            this.soNamKinhNghiem = soNamKinhNghiem;
-            this.sdt = sdt;
-        }
-
-    }
 
     static class ServiceItem {
         String serviceId;
@@ -929,11 +902,32 @@ public class HospitalApp extends JFrame {
                 String name = nameField.getText().trim();
                 String cccd = cccdField.getText().trim();
                 String dob = dobField.getText().trim();
+                java.sql.Date ngaySinh;
+                try{
+                    ngaySinh = java.sql.Date.valueOf(dob);
+                }
+                catch(IllegalArgumentException iea){
+                    JOptionPane.showMessageDialog(this, "Ngày sinh không hợp lệ. Định dạng đúng: yyyy-MM-dd");
+                    return;
+                }
                 String gender = genderField.getText().trim();
                 String addr = addrField.getText().trim();
                 String sdt = phoneField.getText().trim();
                 String sdtNGH = phoneParentField.getText().trim();
-
+                Patient tmp = new Patient(
+                        id,
+                        name,
+                        ngaySinh,
+                        gender,
+                        cccd,
+                        sdt,
+                        sdtNGH,
+                        addr
+                );
+                if(!validatePatientInfo(tmp)){
+                    saved = false;
+                    return;
+                }
                 if (existing == null) {
                     BenhNhanDAO benhNhanDAO = new BenhNhanDAO();
                     try {
@@ -944,10 +938,10 @@ public class HospitalApp extends JFrame {
                     } catch (SQLException ex) {
                         throw new RuntimeException(ex);
                     }
-                    Patient pt = new Patient(id, name, java.sql.Date.valueOf(dob), gender, cccd, sdt, sdtNGH, addr);
+                    Patient pt = new Patient(id, name, ngaySinh, gender, cccd, sdt, sdtNGH, addr);
                     patient = pt;
                 } else {
-                    existing.setHo_ten(name);;
+                    existing.setHo_ten(name);
                     existing.setCccd(cccd);
                     existing.setNgaySinh(java.sql.Date.valueOf(dob));
                     existing.setGioiTinh(gender);
@@ -981,12 +975,12 @@ public class HospitalApp extends JFrame {
             form.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
             idField = new JTextField();
             nameField = new JTextField();
-            cccdField = new JTextField();
-            dobField = new JTextField();
-            genderField = new JTextField();
-            addrField = new JTextField();
+//            cccdField = new JTextField();
+//            dobField = new JTextField();
+//            genderField = new JTextField();
+//            addrField = new JTextField();
             phoneField = new JTextField();
-            emailField = new JTextField();
+//            emailField = new JTextField();
             specialtyField = new JTextField();
 
             form.add(new JLabel("Mã bác sĩ:")); form.add(idField);
@@ -1008,10 +1002,10 @@ public class HospitalApp extends JFrame {
             add(btns, BorderLayout.SOUTH);
 
             if (existing != null) {
-                idField.setText(existing.doctorId); idField.setEnabled(false);
-                nameField.setText(existing.hoTen);
-                cccdField.setText(existing.sdt);
-                addrField.setText(existing.specialty);
+                idField.setText(existing.getMaBacSi()); idField.setEnabled(false);
+                nameField.setText(existing.getHo_ten());
+                cccdField.setText(existing.getSo_dien_thoai());
+//                addrField.setText(existing.getChuyen_khoa());
                 doctor = existing;
             }
 
@@ -1019,25 +1013,20 @@ public class HospitalApp extends JFrame {
                 String id = idField.getText().trim();
                 if (id.isEmpty()) { JOptionPane.showMessageDialog(this, "Nhập mã bác sĩ"); return; }
                 String name = nameField.getText().trim();
-//                String cccd = cccdField.getText().trim();
-//                String dob = dobField.getText().trim();
-//                String gender = genderField.getText().trim();
-//                String so = addrField.getText().trim();
                 String phone = phoneField.getText().trim();
                 int soNamKinhNghiem = Integer.parseInt(addrField.getText().trim());
                 String specialty = specialtyField.getText().trim();
 
                 if (existing == null) {
                     if (findDoctorById(id) != null) { JOptionPane.showMessageDialog(this, "Mã đã tồn tại."); return; }
-//                    Person p = new Person(name, dob, gender, addr, phone, email, cccd);
-                    Doctor d = new Doctor(id, name, phone, soNamKinhNghiem, specialty);
-                    doctor = d;
+//                    Doctor d = new Doctor(id, name, phone, soNamKinhNghiem, specialty);
+//                    doctor = d;
                 } else {
-                    existing.doctorId = id;
-                    existing.hoTen = name;
-                    existing.sdt = phone;
-                    existing.soNamKinhNghiem = soNamKinhNghiem;
-                    existing.specialty = specialty;
+                    existing.setMaBacSi(id);
+                    existing.setHoTen(name);
+                    existing.setSoDienThoai(phone);
+                    existing.setSoNamKinhNghiem(soNamKinhNghiem);
+//                    existing.setChuyenKhoa(specialty);
                 }
                 saved = true;
                 dispose();
@@ -1216,6 +1205,7 @@ public class HospitalApp extends JFrame {
             cancel.addActionListener(e -> dispose());
         }
     }
+
 
     // Prescription form
     class PrescriptionFormDialog extends JDialog {
