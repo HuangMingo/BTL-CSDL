@@ -113,21 +113,21 @@ public class BenhNhanDAO implements DAOInterface<Patient> {
 
     @Override
     public ArrayList<Patient> selectByCondition(String condition) {return null;}
-    public ArrayList<Patient> selectByName(Patient benhNhan) throws SQLException {
+    public ArrayList<Patient> selectByName(String name) throws SQLException {
         ArrayList<Patient> b = new ArrayList<>();
         Connection con = JDBCUtil.getConnection();
         Statement st = con.createStatement();
-        String sql = "SELECT * FROM BenhNhan where ho_ten = '"+benhNhan.getHo_ten()+"'";
+        String sql = "SELECT * FROM BenhNhan where HoVaTen = '"+name+"'";
         ResultSet rs = st.executeQuery(sql);
         while(rs.next()){
-            String id = rs.getString("ma_benh_nhan");
-            String hoten = rs.getString("ho_ten");
-            Date ngaySinh = rs.getDate("ngay_sinh");
-            String gioiTinh = rs.getString("gioi_tinh");
-            String cccd = rs.getString("cccd");
-            String sdt = rs.getString("so_dien_thoai");
-            String sdtngh = rs.getString("so_dien_thoai_ngh");
-            String diachi = rs.getString("diachi");
+            String id = rs.getString("MaBenhNhan");
+            String hoten = rs.getString("HoVaTen");
+            Date ngaySinh = rs.getDate("NgaySinh");
+            String gioiTinh = rs.getString("GioiTinh");
+            String cccd = rs.getString("CCCD");
+            String sdt = rs.getString("SoDienThoai");
+            String sdtngh = rs.getString("SoDienThoaiNGH");
+            String diachi = rs.getString("DiaChi");
             b.add(new Patient(id, hoten, ngaySinh, gioiTinh, cccd, sdt, sdtngh, diachi));
         }
         return b;

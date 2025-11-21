@@ -13,7 +13,7 @@ public interface DAOInterface<T> {
     public  ArrayList<T> selectAll () throws SQLException;
     public  T selectById(T t) throws SQLException;
     public  ArrayList<T> selectByCondition(String condition);
-    public ArrayList<T> selectByName(T t) throws SQLException;
+    public ArrayList<T> selectByName(String name) throws SQLException;
     public T findWithId(String id) throws  SQLException;
     public boolean existDuplicate(T t) throws SQLException;
 }

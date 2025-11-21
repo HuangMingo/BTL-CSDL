@@ -8,6 +8,10 @@ public class Khoa {
         this.ten = ten;
     }
 
+    public Khoa() {
+
+    }
+
     public String getMaKhoa() {
         return maKhoa;
     }

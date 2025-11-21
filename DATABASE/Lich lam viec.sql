@@ -1,0 +1,11 @@
+INSERT INTO LichLamViec (MaLichLamViec, MaBacSi, MaPhong) VALUES
+('LLV001', 'BS001', 'P0001'),
+('LLV002', 'BS002', 'P0002'),
+('LLV003', 'BS001', 'P0003'),
+('LLV004', 'BS004', 'P0004'),
+('LLV005', 'BS005', 'P0005'),
+('LLV006', 'BS005', 'P0006'),
+('LLV007', 'BS007', 'P0007'),
+('LLV008', 'BS008', 'P0008'),
+('LLV009', 'BS009', 'P0009'),
+('LLV010', 'BS010', 'P0010');
