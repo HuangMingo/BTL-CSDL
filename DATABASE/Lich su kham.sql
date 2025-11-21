@@ -1,4 +1,11 @@
 INSERT INTO lichsukham (MaKham, MaBenhNhan, MaBacSi, NgayKham, ChanDoan) VALUES
-('MK001', 'BN001', 'BS001', '2025-10-01', 'Viem phoi'),
-('MK002', 'BN002', 'BS002', '2025-10-02', 'Đau bụng nhẹ'),
-('MK003', 'BN003', 'BS003', '2025-10-03', 'Kiểm tra đường huyết')
+('K0001', 'BN001', 'BS001', '2025-10-20', 'Viêm họng cấp, kê Paracetamol.'), -- Nguyễn Văn Mạnh (BN001) khám BS Nguyễn Trung Nghĩa (BS001)
+('K0002', 'BN002', 'BS006', '2025-10-21', 'Đau đầu do căng thẳng, kê thuốc giảm đau.'), -- Trần Thị Trà (BN002) khám BS Phạm Minh Hùng (BS006)
+('K0003', 'BN003', 'BS003', '2025-10-22', 'Viêm da dị ứng nhẹ.'), -- Đinh Tiền Đạt (BN003) khám BS Trần Văn Phúc (BS003)
+('K0004', 'BN001', 'BS008', '2025-10-23', 'Kiểm tra sức khỏe định kỳ, kết quả tốt.'), -- Nguyễn Văn Mạnh (BN001) khám BS Nguyễn Thu Trang (BS008)
+('K0005', 'BN010', 'BS002', '2025-10-24', 'Rối loạn tiêu hóa, kê men vi sinh.'), -- Ngô Minh Nam (BN010) khám BS Tống Đức (BS002)
+('K0006', 'BN019', 'BS007', '2025-10-25', 'Tư vấn tiêm chủng cúm.'), -- Bạc Thị Oai (BN019) khám BS Võ Thanh Tùng (BS007)
+('K0007', 'BN002', 'BS010', '2025-10-26', 'Theo dõi huyết áp cao, điều chỉnh liều thuốc.'), -- Trần Thị Trà (BN002) khám BS Trương Kim Cúc (BS010)
+('K0008', 'BN003', 'BS005', '2025-10-27', 'Cảm cúm thông thường, nghỉ ngơi tại nhà.'), -- Đinh Tiền Đạt (BN003) khám BS Lê Thị Mỹ Anh (BS005)
+('K0009', 'BN009', 'BS001', '2025-10-28', 'Kiểm tra mắt, thị lực ổn định.'), -- Ngô Minh Quân (BN009) khám BS Nguyễn Trung Nghĩa (BS001)
+('K0010', 'BN003', 'BS004', '2025-10-29', 'Đau lưng cấp tính, vật lý trị liệu.'); -- Đinh Tiền Đạt (BN003) khám BS Đỗ Thị Ngọc Diệp (BS004)
