@@ -73,10 +73,10 @@ public class HospitalApp extends JFrame {
         tabs.addTab("Bệnh nhân", buildPatientPanel());
         tabs.addTab("Bác sĩ", buildDoctorPanel());
 //        tabs.addTab("Lịch sử khám", buildExamPanel());
-        tabs.addTab("Hồ sơ bệnh án", buildMedicalRecordPanel());
-        tabs.addTab("Dịch vụ y tế", buildServicePanel());
+//        tabs.addTab("Hồ sơ bệnh án", buildMedicalRecordPanel());
+//        tabs.addTab("Dịch vụ y tế", buildServicePanel());
 //        tabs.addTab("Loại thuốc", buildMedicineTypePanel());
-        tabs.addTab("Đơn thuốc", buildPrescriptionPanel());
+//        tabs.addTab("Đơn thuốc", buildPrescriptionPanel());
 
         add(tabs, BorderLayout.CENTER);
 
