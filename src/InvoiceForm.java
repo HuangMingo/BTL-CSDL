@@ -1,3 +1,5 @@
+import db.JDBCUtil;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
@@ -8,8 +10,9 @@ public class InvoiceForm extends JFrame {
 
     private JTextField txtMaHoaDon, txtTenBenhNhan, txtNgayKham, txtTongChiPhi;
     private JTable tblThuoc, tblXetNghiem;
-
-    public InvoiceForm(String maKham) {
+    private DefaultTableModel itemsModel; //thuoc
+    private DefaultTableModel modelXN; //bang xet nghiem
+    public InvoiceForm(String maKham) throws SQLException {
         setTitle("HÓA ĐƠN KHÁM BỆNH");
         setSize(950, 720);
         setLocationRelativeTo(null);
@@ -47,8 +50,34 @@ public class InvoiceForm extends JFrame {
         gbc.anchor = GridBagConstraints.WEST;
 
         txtMaHoaDon = new JTextField(15);
+        txtMaHoaDon.setText("HD0001");
         txtTenBenhNhan = new JTextField(15);
+        Connection con = JDBCUtil.getConnection();
+        String sql = "SELECT distinct p.HoVaTen\n" +
+                "FROM lichsukham l\n" +
+                "JOIN benhnhan p\n" +
+                "ON l.MaBenhNhan = p.MaBenhNhan\n" +
+                "WHERE l.MaKham IN(\n" +
+                "\tSELECT don.MaKham\n" +
+                "\tFROM donthuoc don\n" +
+                "\tWHERE don.MaHoaDon = 'HD0001'\n" +
+                ")";
+        PreparedStatement ps = con.prepareStatement(sql);
+        ResultSet rs = ps.executeQuery();
+        while(rs.next()){
+            txtTenBenhNhan.setText(rs.getString("HoVaTen"));
+        }
+
+        String sql2 = "SELECT NgayTaoHoaDon\n" +
+                "FROM hoadon\n" +
+                "WHERE MaHoaDon = 'HD0001'";
+        PreparedStatement ps1 = con.prepareStatement(sql2);
+        ResultSet rs1 = ps1.executeQuery();
         txtNgayKham = new JTextField(15);
+        while(rs1.next()){
+            txtNgayKham.setText(rs1.getString("NgayTaoHoaDon"));
+        }
+
 
         gbc.gridx = 0; gbc.gridy = 0;
         pnlInfo.add(new JLabel("Mã hóa đơn:"), gbc);
@@ -57,7 +86,7 @@ public class InvoiceForm extends JFrame {
         pnlInfo.add(txtMaHoaDon, gbc);
 
         gbc.gridx = 2;
-        pnlInfo.add(new JLabel("Ngày khám:"), gbc);
+        pnlInfo.add(new JLabel("Ngày tạo hóa đơn:"), gbc);
 
         gbc.gridx = 3;
         pnlInfo.add(txtNgayKham, gbc);
@@ -75,7 +104,9 @@ public class InvoiceForm extends JFrame {
         // =================================================================
         // BẢNG ĐƠN THUỐC
         // =================================================================
-        tblThuoc = new JTable();
+        String[] cols = {"Mã thuốc", "Tên thuốc", "Số lượng", "Giá tiền(VNĐ)", "Thành tiền(VNĐ)"};
+        itemsModel = new DefaultTableModel(cols, 0);
+        tblThuoc = new JTable(itemsModel);
         JScrollPane spThuoc = new JScrollPane(tblThuoc);
         spThuoc.setBorder(BorderFactory.createTitledBorder("Đơn thuốc"));
         spThuoc.setPreferredSize(new Dimension(900, 200));
@@ -87,6 +118,9 @@ public class InvoiceForm extends JFrame {
         // BẢNG XÉT NGHIỆM
         // =================================================================
         tblXetNghiem = new JTable();
+        String[] cols1 = {"Mã xét nghiệm", "Tên xét nghiệm", "Thành tiền(VNĐ)"};
+        DefaultTableModel itemsModel1 = new DefaultTableModel(cols1, 0);
+        tblXetNghiem.setModel(itemsModel1);
         JScrollPane spXN = new JScrollPane(tblXetNghiem);
         spXN.setBorder(BorderFactory.createTitledBorder("Xét nghiệm"));
         spXN.setPreferredSize(new Dimension(900, 200));
@@ -100,10 +134,8 @@ public class InvoiceForm extends JFrame {
         // =================================================================
         JPanel pnlBottom = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         pnlBottom.setBorder(BorderFactory.createTitledBorder("Tổng kết"));
-
-        JLabel lblTotal = new JLabel("Tổng chi phí:");
+        JLabel lblTotal = new JLabel("Tổng tiền:");
         lblTotal.setFont(new Font("Segoe UI", Font.BOLD, 16));
-
         txtTongChiPhi = new JTextField(15);
         txtTongChiPhi.setFont(new Font("Segoe UI", Font.BOLD, 16));
         txtTongChiPhi.setForeground(Color.RED);
@@ -115,7 +147,6 @@ public class InvoiceForm extends JFrame {
 
         // >>> Load dữ liệu
         loadData(maKham);
-
         setVisible(true);
     }
 
@@ -131,65 +162,51 @@ public class InvoiceForm extends JFrame {
             );
 
             // ----------------------------------------------------------------
-            // 1. Thông tin bệnh nhân + ngày khám
-            // ----------------------------------------------------------------
-            PreparedStatement stInfo = con.prepareStatement(
-                    "SELECT bn.HoVaTen, lk.NgayKham " +
-                            "FROM lichsukham lk JOIN benhnhan bn ON lk.MaBenhNhan = bn.MaBenhNhan " +
-                            "WHERE lk.MaKham = ?"
-            );
-            stInfo.setString(1, maKham);
-            ResultSet rs = stInfo.executeQuery();
-
-            if (rs.next()) {
-                txtMaHoaDon.setText(maKham);
-                txtTenBenhNhan.setText(rs.getString("HoVaTen"));
-                txtNgayKham.setText(rs.getString("NgayKham"));
-            }
-
-            // ----------------------------------------------------------------
             // 2. Đơn thuốc
             // ----------------------------------------------------------------
             PreparedStatement stThuoc = con.prepareStatement(
-                    "SELECT t.TenThuoc, ct.LieuLuong, ct.CachDung, t.ChiPhi " +
-                            "FROM donthuoc dt " +
-                            "JOIN chitietdonthuoc ct ON dt.MaDon = ct.MaDon " +
-                            "JOIN thuoc t ON ct.MaThuoc = t.MaThuoc " +
-                            "WHERE dt.MaKham = ?"
+                    "SELECT ct.MaThuoc, t.TenThuoc, ct.SoLuong, t.ChiPhi, t.chiphi * ct.SoLuong thanhtien\n" +
+                            "FROM donthuoc don\n" +
+                            "JOIN chitietdonthuoc ct\n" +
+                            "ON don.MaDon = ct.MaDon\n" +
+                            "JOIN thuoc t\n" +
+                            "ON t.MaThuoc = ct.MaThuoc\n" +
+                            "WHERE MaHoaDon = 'HD0001';"
             );
-            stThuoc.setString(1, maKham);
+//            stThuoc.setString(1, maKham);
             ResultSet rsThuoc = stThuoc.executeQuery();
-
-            DefaultTableModel modelThuoc = new DefaultTableModel(
-                    new String[]{"Tên thuốc", "Liều lượng", "Cách dùng", "Đơn giá (VND)"}, 0
-            ){
-                public boolean isCellEditable(int row, int column){ return false; }
-            };
 
             double tongThuoc = 0;
             while (rsThuoc.next()) {
-                modelThuoc.addRow(new Object[]{
-                        rsThuoc.getString(1),
-                        rsThuoc.getString(2),
-                        rsThuoc.getString(3),
-                        rsThuoc.getDouble(4)
+
+                itemsModel.addRow(new Object[]{
+                        rsThuoc.getString("MaThuoc"),
+                        rsThuoc.getString("TenThuoc"),
+                        rsThuoc.getString("SoLuong"),
+                        rsThuoc.getDouble("ChiPhi"),
+                        rsThuoc.getDouble("thanhtien")
                 });
-                tongThuoc += rsThuoc.getDouble(4);
+                tongThuoc += rsThuoc.getDouble("thanhtien");
             }
-            tblThuoc.setModel(modelThuoc);
+            tblThuoc.setModel(itemsModel);
 
             // ----------------------------------------------------------------
             // 3. Xét nghiệm
             // ----------------------------------------------------------------
+
+
             PreparedStatement stXN = con.prepareStatement(
-                    "SELECT TenXetNghiem, KetQuaXetNghiem, ChiPhi " +
-                            "FROM xetnghiem WHERE MaKham = ?"
+                    "SELECT pxn.MaXetNghiem, xn.TenXetNghiem, xn.ChiPhi\n" +
+                            "FROM phieuxetnghiem pxn\n" +
+                            "JOIN xetnghiem xn\n" +
+                            "ON pxn.MaXetNghiem = xn.MaXetNghiem\n" +
+                            "WHERE MaHoaDon = 'HD0001'"
             );
-            stXN.setString(1, maKham);
+//            stXN.setString(1, maKham);
             ResultSet rsXN = stXN.executeQuery();
 
             DefaultTableModel modelXN = new DefaultTableModel(
-                    new String[]{"Tên xét nghiệm", "Kết quả", "Chi phí (VND)"}, 0
+                    new String[]{"Mã xét nghiệm", "Tên xét nghiệm", "Chi phí (VND)"}, 0
             ){
                 public boolean isCellEditable(int row, int column){ return false; }
             };
@@ -197,11 +214,11 @@ public class InvoiceForm extends JFrame {
             double tongXN = 0;
             while (rsXN.next()) {
                 modelXN.addRow(new Object[]{
-                        rsXN.getString(1),
-                        rsXN.getString(2),
-                        rsXN.getDouble(3)
+                        rsXN.getString("MaXetNghiem"),
+                        rsXN.getString("TenXetNghiem"),
+                        rsXN.getDouble("ChiPhi")
                 });
-                tongXN += rsXN.getDouble(3);
+                tongXN += rsXN.getDouble("ChiPhi");
             }
             tblXetNghiem.setModel(modelXN);
 
@@ -215,7 +232,7 @@ public class InvoiceForm extends JFrame {
         }
     }
 
-    public static void main(String[] args) {
-        new InvoiceForm("MK001");
+    public static void main(String[] args) throws SQLException {
+        new InvoiceForm("K0001");
     }
 }

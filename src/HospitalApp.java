@@ -9,16 +9,9 @@ import model.Patient;
 import model.Doctor;
 
 import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.event.*;
-import java.sql.Connection;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.text.ParseException;
 import java.util.*;
 import java.text.SimpleDateFormat;
 
@@ -101,10 +94,10 @@ public class HospitalApp extends JFrame {
             check = false;
         }
 
-        if(pa.getMa_benh_nhan().length() != 5 && !pa.getMa_benh_nhan().substring(0, 2).equals("BS")) {
-            JOptionPane.showMessageDialog(null, "Mã bệnh nhân không hợp lệ");
-            check = false;
-        }
+//        if(pa.getMa_benh_nhan().length() != 5 && !pa.getMa_benh_nhan().substring(0, 2).equals("BS")) {
+//            JOptionPane.showMessageDialog(null, "Mã bệnh nhân không hợp lệ");
+//            check = false;
+//        }
         return check;
     }
 //    Kiểm tra hợp lệ bác sĩ
@@ -114,10 +107,17 @@ public class HospitalApp extends JFrame {
             JOptionPane.showMessageDialog(null, "Số điện thoại không hợp lệ");
             check = false;
         }
-        if(d.getMaBacSi().length() != 5 || !d.getMaBacSi().substring(0, 2).equals("BS")) {
-            JOptionPane.showMessageDialog(null, "Mã bác sĩ không hợp lệ");
-            check = false;
-        }
+//        for(int i = 2; i < d.getMaBacSi().length(); i++){
+//            if(!Character.isDigit(d.getMaBacSi().charAt(i))){
+//                JOptionPane.showMessageDialog(null, "Mã bác sĩ không hợp lệ");
+//                check = false;
+//                break;
+//            }
+//        }
+//        if(d.getMaBacSi().length() != 5 || !d.getMaBacSi().substring(0, 2).equals("BS")) {
+//            JOptionPane.showMessageDialog(null, "Mã bác sĩ không hợp lệ");
+//            check = false;
+//        }
         return check;
     }
     private JPanel buildPatientPanel() throws SQLException {
@@ -326,12 +326,13 @@ public class HospitalApp extends JFrame {
             }
             d.setVisible(true);
             if (d.saved) {
-                try {
-                    bacSiDAO.insert(d.doctor);
-                    refreshDoctorTable(bacSiDAO.selectAll());
-                } catch (SQLException ex) {
-                    throw new RuntimeException(ex);
-                }
+
+                    try {
+                        bacSiDAO.insert(d.doctor);
+                        refreshDoctorTable(bacSiDAO.selectAll());
+                    } catch (SQLException ex) {
+                        throw new RuntimeException(ex);
+                    }
             }
         });
 
@@ -941,6 +942,9 @@ public class HospitalApp extends JFrame {
             JPanel form = new JPanel(new GridLayout(8,2,6,6));
             form.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
             idField = new JTextField();
+//            int cnt = 801;
+//            idField.setText(String.format("BN%03d", cnt++));
+//            idField.setEnabled(false);
             nameField = new JTextField();
             cccdField = new JTextField();
             dobField = new JTextField();
@@ -967,7 +971,8 @@ public class HospitalApp extends JFrame {
             add(btns, BorderLayout.SOUTH);
 
             if (existing != null) {
-                idField.setText(existing.getMa_benh_nhan()); idField.setEnabled(false);
+                idField.setText(existing.getMa_benh_nhan());
+                idField.setEnabled(false);
                 nameField.setText(existing.getHo_ten());
                 cccdField.setText(existing.getCccd());
                 dobField.setText(existing.getNgaySinh().toString());
@@ -1035,7 +1040,6 @@ public class HospitalApp extends JFrame {
                 saved = true;
                 dispose();
             });
-
             cancel.addActionListener(e -> dispose());
         }
     }
@@ -1047,10 +1051,9 @@ public class HospitalApp extends JFrame {
             super(owner, "Hồ sơ Bệnh nhân", true);
 
             // --- 1. Cấu hình cơ bản ---
-            setSize(800, 600);
+            setSize(1280, 1280);
             setLocationRelativeTo(owner);
             setLayout(new BorderLayout(10, 10)); // Layout chính: BorderLayout
-
             // --- 2. Panel Thông tin Bệnh nhân (NORTH) ---
             JPanel infoPanel = new JPanel(new GridLayout(3, 4, 5, 5)); // 3 hàng, 4 cột, khoảng cách 5px
             infoPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 5, 15)); // Đệm ngoài
@@ -1062,7 +1065,12 @@ public class HospitalApp extends JFrame {
             DiaChiField = new JTextField(p.getDiaChi());
             SDTField = new JTextField(p.getSo_dien_thoai());
             SDT_NGHField = new JTextField(p.getSo_dien_thoai_ngh());
-
+            MaBNField.setEnabled(false);
+            GioiTinhField.setEnabled(false);
+            HoTenField.setEnabled(false);
+            DiaChiField.setEnabled(false);
+            SDTField.setEnabled(false);
+            SDT_NGHField.setEnabled(false);
             // Hàng 1
             infoPanel.add(new JLabel("Mã bệnh nhân:"));
             infoPanel.add(MaBNField);
@@ -1121,21 +1129,19 @@ public class HospitalApp extends JFrame {
         ArrayList<String> specialties = loadSpecialties();
         String[] tmp = specialties.toArray(new String[0]);
         JComboBox<String> specialtyField = new JComboBox<>(tmp);
+        BacSiDAO bacSiDAO = new BacSiDAO();
         DoctorFormDialog(Frame owner, Doctor existing) throws SQLException {
             super(owner, true);
             setTitle(existing == null ? "Thêm bác sĩ" : "Sửa bác sĩ");
             setSize(450, 420);
             setLocationRelativeTo(owner);
             setLayout(new BorderLayout());
-
             JPanel form = new JPanel(new GridLayout(9,2,6,6));
             form.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
             idField = new JTextField();
             nameField = new JTextField();
             phoneField = new JTextField();
             experienceField = new JTextField();
-
-
             form.add(new JLabel("Mã bác sĩ:")); form.add(idField);
             form.add(new JLabel("Họ tên:")); form.add(nameField);
             form.add(new JLabel("SĐT:")); form.add(phoneField);
@@ -1177,12 +1183,18 @@ public class HospitalApp extends JFrame {
                             soNamKinhNghiem,
                             a.get(0)
                 );
+
+
                     if(!validateDoctorInfo(doctor)){
                         saved = false;
                         return;
                     }
                     if (existing == null) {
-                        if (findDoctorById(id) != null) { JOptionPane.showMessageDialog(this, "Mã đã tồn tại."); return; }
+                        if(bacSiDAO.findWithId(id) != null){
+                            JOptionPane.showMessageDialog(this, "Mã bác sĩ đã tồn tai");
+                            saved = false;
+                            return;
+                        }
                         Doctor d = new Doctor(id, name, phone, soNamKinhNghiem, khoa);
 //                        doctor = d;
                     } else {
